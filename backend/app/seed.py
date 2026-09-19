@@ -58,7 +58,7 @@ def seed() -> None:
             db.add_all([m1, m2, m3])
             db.flush()
 
-            now = datetime.now()
+            now = datetime.utcnow()
             db.add_all(
                 [
                     ViscositySample(

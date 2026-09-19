@@ -74,7 +74,8 @@
     error = '';
     const payload = {
       millId: Number(form.millId),
-      sampledAt: form.sampledAt,
+      // datetime-local yields browser-local wall clock; send unambiguous UTC ISO
+      sampledAt: form.sampledAt ? new Date(form.sampledAt).toISOString() : '',
       viscosityPaS: Number(form.viscosityPaS),
       tempC: form.tempC === '' ? null : Number(form.tempC),
       notes: form.notes,

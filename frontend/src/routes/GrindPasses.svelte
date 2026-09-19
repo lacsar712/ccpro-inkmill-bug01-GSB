@@ -77,7 +77,8 @@
     error = '';
     const payload = {
       millId: Number(form.millId),
-      startedAt: form.startedAt,
+      // datetime-local yields browser-local wall clock; send unambiguous UTC ISO
+      startedAt: form.startedAt ? new Date(form.startedAt).toISOString() : '',
       passNo: Number(form.passNo),
       durationMin: Number(form.durationMin),
       mediaType: form.mediaType,

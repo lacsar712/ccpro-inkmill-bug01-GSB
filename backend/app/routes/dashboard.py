@@ -19,7 +19,7 @@ def summary():
     db = SessionLocal()
     try:
         now = datetime.utcnow()
-        since_24h = now - timedelta(hours=24) - timedelta(hours=8)
+        since_24h = now - timedelta(hours=24)
         since_7d = now - timedelta(days=7)
 
         workshop_total = db.scalar(select(func.count()).select_from(Workshop)) or 0
