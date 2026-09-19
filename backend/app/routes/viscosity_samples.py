@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 
 from flask import Blueprint, jsonify, request
@@ -8,7 +7,7 @@ from app.database import SessionLocal
 from app.models.mill import Mill
 from app.models.viscosity_sample import ViscositySample
 from app.serializers import viscosity_sample_json
-from app.utils import error, normalize_datetime
+from app.utils import error, normalize_datetime, utcnow
 
 bp = Blueprint("viscosity_samples", __name__, url_prefix="/api/viscosity-samples")
 
@@ -64,15 +63,20 @@ def create_sample():
     if temp_raw is not None and temp_raw != "":
         temp_c = Decimal(str(temp_raw))
 
+    try:
+        sampled_at = (
+            normalize_datetime(str(body.get("sampledAt") or ""))
+            if body.get("sampledAt")
+            else utcnow()
+        )
+    except ValueError:
+        return error("取样时间格式不正确", 400)
+
     db = SessionLocal()
     try:
         row = ViscositySample(
             mill_id=int(body["millId"]),
-            sampled_at=(
-                normalize_datetime(str(body.get("sampledAt") or ""))
-                if body.get("sampledAt")
-                else datetime.utcnow()
-            ),
+            sampled_at=sampled_at,
             viscosity_pa_s=Decimal(str(body["viscosityPaS"])),
             temp_c=temp_c,
             notes=str(body.get("notes", "")).strip() or None,
@@ -98,6 +102,11 @@ def update_sample(item_id: int):
     if temp_raw is not None and temp_raw != "":
         temp_c = Decimal(str(temp_raw))
 
+    try:
+        sampled_at = normalize_datetime(str(body["sampledAt"]))
+    except ValueError:
+        return error("取样时间格式不正确", 400)
+
     db = SessionLocal()
     try:
         row = db.get(ViscositySample, item_id)
@@ -105,7 +114,7 @@ def update_sample(item_id: int):
             return error("粘度取样记录不存在", 404)
 
         row.mill_id = int(body["millId"])
-        row.sampled_at = normalize_datetime(str(body["sampledAt"]))
+        row.sampled_at = sampled_at
         row.viscosity_pa_s = Decimal(str(body["viscosityPaS"]))
         row.temp_c = temp_c
         row.notes = str(body.get("notes", "")).strip() or None

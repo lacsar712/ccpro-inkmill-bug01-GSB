@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from app.auth import hash_password
@@ -8,6 +8,7 @@ from app.models.mill import Mill
 from app.models.user import User
 from app.models.viscosity_sample import ViscositySample
 from app.models.workshop import Workshop
+from app.utils import utcnow
 
 
 def seed() -> None:
@@ -58,7 +59,7 @@ def seed() -> None:
             db.add_all([m1, m2, m3])
             db.flush()
 
-            now = datetime.now()
+            now = utcnow()
             db.add_all(
                 [
                     ViscositySample(

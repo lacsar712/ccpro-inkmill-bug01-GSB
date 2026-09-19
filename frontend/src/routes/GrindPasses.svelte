@@ -14,6 +14,22 @@
     return d.toISOString().slice(0, 16);
   }
 
+  // datetime-local 输入框是本地时间；提交时必须显式换算成带 Z 的 UTC 时间。
+  function toUtcIso(localInput: string): string {
+    return new Date(localInput).toISOString();
+  }
+
+  // 后端返回带 Z 的 UTC ISO 串，回填输入框时换算回本地时间。
+  function toLocalInput(iso: string): string {
+    const d = new Date(iso.replace(' ', 'T'));
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  }
+
+  function formatLocal(iso: string): string {
+    return toLocalInput(iso).replace('T', ' ');
+  }
+
   let form = {
     millId: '',
     startedAt: nowLocal(),
@@ -55,12 +71,6 @@
     editingId = null;
   }
 
-  function toLocalInput(iso: string): string {
-    const d = new Date(iso.replace(' ', 'T'));
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
-  }
-
   function edit(row: GrindPass) {
     editingId = row.id;
     form = {
@@ -77,7 +87,7 @@
     error = '';
     const payload = {
       millId: Number(form.millId),
-      startedAt: form.startedAt,
+      startedAt: toUtcIso(form.startedAt),
       passNo: Number(form.passNo),
       durationMin: Number(form.durationMin),
       mediaType: form.mediaType,
@@ -164,7 +174,7 @@
         <tr>
           <td>{row.id}</td>
           <td>{millLabel(row.millId)}</td>
-          <td>{row.startedAt}</td>
+          <td>{formatLocal(row.startedAt)}</td>
           <td>{row.passNo}</td>
           <td>{row.durationMin}</td>
           <td>{row.mediaType}</td>

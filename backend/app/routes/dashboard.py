@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
@@ -9,6 +9,7 @@ from app.models.grind_pass import GrindPass
 from app.models.mill import Mill
 from app.models.viscosity_sample import ViscositySample
 from app.models.workshop import Workshop
+from app.utils import utcnow
 
 bp = Blueprint("dashboard", __name__, url_prefix="/api")
 
@@ -18,8 +19,9 @@ bp = Blueprint("dashboard", __name__, url_prefix="/api")
 def summary():
     db = SessionLocal()
     try:
-        now = datetime.utcnow()
-        since_24h = now - timedelta(hours=24) - timedelta(hours=8)
+        # sampled_at / started_at are stored as naive UTC.
+        now = utcnow()
+        since_24h = now - timedelta(hours=24)
         since_7d = now - timedelta(days=7)
 
         workshop_total = db.scalar(select(func.count()).select_from(Workshop)) or 0

@@ -70,11 +70,16 @@ def create_pass():
     if err:
         return error(err, 400)
 
+    try:
+        started_at = normalize_datetime(str(body["startedAt"]))
+    except ValueError:
+        return error("开始时间格式不正确", 400)
+
     db = SessionLocal()
     try:
         row = GrindPass(
             mill_id=int(body["millId"]),
-            started_at=normalize_datetime(str(body["startedAt"])),
+            started_at=started_at,
             pass_no=int(body["passNo"]),
             duration_min=Decimal(str(body["durationMin"])),
             media_type=str(body["mediaType"]).strip(),
@@ -96,6 +101,11 @@ def update_pass(item_id: int):
     if err:
         return error(err, 400)
 
+    try:
+        started_at = normalize_datetime(str(body["startedAt"]))
+    except ValueError:
+        return error("开始时间格式不正确", 400)
+
     db = SessionLocal()
     try:
         row = db.get(GrindPass, item_id)
@@ -103,7 +113,7 @@ def update_pass(item_id: int):
             return error("研磨遍次不存在", 404)
 
         row.mill_id = int(body["millId"])
-        row.started_at = normalize_datetime(str(body["startedAt"]))
+        row.started_at = started_at
         row.pass_no = int(body["passNo"])
         row.duration_min = Decimal(str(body["durationMin"]))
         row.media_type = str(body["mediaType"]).strip()
